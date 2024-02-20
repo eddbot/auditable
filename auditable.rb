@@ -1,16 +1,19 @@
 # frozen_string_literal: true
 
-module Auditable
-  def self.included(klass)
-    def klass.method_added(method_name)
-      super
+require 'logger'
+
+logger ||= Logger.new($stdout)
+
+Auditable = Module.new do
+  define_singleton_method :included do |klass|
+    klass.define_singleton_method :method_added do |method_name|
 
       return if method_defined?(:_auditable)
 
       alias_method :_auditable, method_name
 
       define_method method_name do
-        puts ">>> LOGGING ACCESS TO #{method_name} <<<"
+        logger.info(">>> LOGGING ACCESS TO #{method_name} <<<")
         _auditable
       end
     end
